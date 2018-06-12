@@ -1,85 +1,22 @@
 <template>
   <div id="app">
-    <div class="example">
-        <section class="demo">
-          <span class="label">default:</span>
-          <date-picker v-model="value1" lang="en" editable></date-picker>
-        </section>
-        <section class="demo">
-          <span class="label">range:</span>
-          <date-picker v-model="value2" range lang="en"></date-picker>
-        </section>
-        <pre class="pre">{{demo1}}</pre>
-    </div>
-    <div class="example">
-        <section class="demo">
-          <span class="label">datetime:</span>
-          <date-picker v-model="value3" lang="en" type="datetime" format="yyyy-MM-dd HH:mm:ss"></date-picker>
-        </section>
-        <section class="demo">
-          <span class="label">datetime with minute-step picker:</span>
-          <date-picker v-model="value4" lang="en" type="datetime" format="yyyy-MM-dd hh:mm:ss a"
-          :time-picker-options="{
-            start: '00:00',
-            step: '00:30',
-            end: '23:30'
-          }"></date-picker>
-        </section>
-        <section class="demo">
-          <span class="label">datetime range:</span>
-          <date-picker v-model="value5" range type="datetime" lang="en" format="yyyy-MM-dd HH:mm:ss"></date-picker>
-        </section>
-        <blockquote class="tips">
-          if you use the datetime, you should set the format which default is 'yyyy-MM-dd'
-        </blockquote>
-        <pre class="pre">{{demo2}}</pre>
-    </div>
-    <div class="example">
-      <section class="demo">
-        <span class="label">with confirm:</span>
-        <date-picker 
-          v-model="value6" 
-          format="yyyy-MM-dd" 
-          lang="en"
-          confirm></date-picker>
-      </section>
-      <section class="demo">
-        <span class="label">datetime with confirm:</span>
-        <date-picker 
-          v-model="value7" 
-          type="datetime"
-          lang="en"
-          format="yyyy-MM-dd hh:mm:ss"
-          confirm></date-picker>
-      </section>
-      <section class="demo">
-        <span class="label">range with confirm:</span>
-        <date-picker 
-          v-model="value8" 
-          range
-          lang="en"
-          format="yyyy-MM-dd"
-          @confirm="confirm"
-          confirm></date-picker>
-      </section>
-      <blockquote class="tips">
-        Recommend to use the confirm option when the type is 'datetime' or range is true  
-      </blockquote>
-      <pre class="pre">{{demo3}}</pre>
-    </div>
-
+    <calendar-panel
+      v-model="value1"
+      range
+      :time-picker-options="{ start: '01:00', step: '00:30', end: '23:00' }"
+      format="yyyy-MM-dd"></calendar-panel>
   </div>
 </template>
 
 <script>
-import DatePicker from '../index'
+import CalendarPanel from '../src/index.vue'
 
 export default {
   name: 'app',
-  components: { DatePicker },
+  components: { CalendarPanel },
   data () {
     return {
-      value1: new Date(),
+      value1: null,
       value2: '',
       value3: new Date(),
       value4: '',
