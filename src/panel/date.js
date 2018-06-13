@@ -17,7 +17,12 @@ export default {
       type: Number,
       validator: val => val >= 1 && val <= 7
     },
-    disabledDate: Function
+    disabledDate: {
+      type: Function,
+      default: () => {
+        return false
+      }
+    }
   },
   methods: {
     selectDate ({ year, month, day }) {

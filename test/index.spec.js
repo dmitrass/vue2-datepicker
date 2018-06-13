@@ -1,9 +1,14 @@
 import Vue from 'vue'
 import { mount, shallowMount } from '@vue/test-utils'
+import { use } from '../src/locale/index'
 import DatePicker from '../src/index.vue'
 import CalendarPanel from '../src/calendar.vue'
+
+import DatePanel from '../src/panel/date'
 import TimePanel from '../src/panel/time'
 import YearPanel from '../src/panel/year'
+
+use('zh')
 
 let wrapper
 
@@ -170,7 +175,7 @@ describe('datepicker', () => {
     expect(vm.popupVisible).toBe(false)
   })
 
-  it.only('prop: input attribte - inputName inputClass placeholder', () => {
+  it('prop: input attribte - inputName inputClass placeholder', () => {
     wrapper = shallowMount(DatePicker, {
       propsData: {
         value: new Date(2018, 4, 5),
@@ -191,45 +196,6 @@ describe('datepicker', () => {
 })
 
 describe('calendar-panel', () => {
-  const testRenderCalendar = (i) => it(`feat: render the corrent calendar firstDayOfWeek: ${i}`, () => {
-    wrapper = mount(CalendarPanel, {
-      propsData: {
-        value: new Date(2018, 4, 1),
-        firstDayOfWeek: i
-      }
-    })
-    const vm = wrapper.vm
-    const lastMonth = new Date(2018, 3, 30)
-    const lastMonthDay = 30
-    const lastMonthLength = (lastMonth.getDay() + 7 - i) % 7 + 1
-    const currentMonthLength = 31
-    const tds = wrapper.findAll('.mx-panel-date td')
-    for (let i = 0; i < 42; i++) {
-      const td = tds.at(i)
-      const text = parseInt(td.text(), 10)
-      const classes = td.classes()
-      if (i < lastMonthLength) {
-        expect(classes).toContain('last-month')
-        expect(text).toBe(lastMonthDay - lastMonthLength + 1 + i)
-      } else if (i < lastMonthLength + currentMonthLength) {
-        expect(text).toBe(i - lastMonthLength + 1)
-        expect(classes).toContain('cur-month')
-        if (text === 1) {
-          expect(classes).toContain('actived')
-        }
-      } else {
-        expect(text).toBe(i - lastMonthLength - currentMonthLength + 1)
-        expect(classes).toContain('next-month')
-      }
-    }
-    const week = ['一', '二', '三', '四', '五', '六', '日']
-    const firstWeek = wrapper.find('tr th').text()
-    expect(firstWeek).toBe(week[i - 1])
-  })
-
-  for (let i = 1; i <= 7; i++) {
-    testRenderCalendar(i)
-  }
 
   it('click: prev/next month', () => {
     wrapper = mount(CalendarPanel)
@@ -354,6 +320,50 @@ describe('calendar-panel', () => {
       }
     }
   })
+})
+
+describe('date-panel', () => {
+  const testRenderCalendar = (i) => it(`feat: render the corrent date panel firstDayOfWeek: ${i}`, () => {
+    wrapper = mount(DatePanel, {
+      propsData: {
+        value: new Date(2018, 4, 1),
+        calendarMonth: 4,
+        calendarYear: 2018,
+        firstDayOfWeek: i
+      }
+    })
+    const vm = wrapper.vm
+    const lastMonth = new Date(2018, 3, 30)
+    const lastMonthDay = 30
+    const lastMonthLength = (lastMonth.getDay() + 7 - i) % 7 + 1
+    const currentMonthLength = 31
+    const tds = wrapper.findAll('.mx-panel-date td')
+    for (let i = 0; i < 42; i++) {
+      const td = tds.at(i)
+      const text = parseInt(td.text(), 10)
+      const classes = td.classes()
+      if (i < lastMonthLength) {
+        expect(classes).toContain('last-month')
+        expect(text).toBe(lastMonthDay - lastMonthLength + 1 + i)
+      } else if (i < lastMonthLength + currentMonthLength) {
+        expect(text).toBe(i - lastMonthLength + 1)
+        expect(classes).toContain('cur-month')
+        if (text === 1) {
+          expect(classes).toContain('actived')
+        }
+      } else {
+        expect(text).toBe(i - lastMonthLength - currentMonthLength + 1)
+        expect(classes).toContain('next-month')
+      }
+    }
+    const week = ['一', '二', '三', '四', '五', '六', '日']
+    const firstWeek = wrapper.find('tr th').text()
+    expect(firstWeek).toBe(week[i - 1])
+  })
+
+  for (let i = 1; i <= 7; i++) {
+    testRenderCalendar(i)
+  }
 })
 
 describe('year-panel', () => {

@@ -49,6 +49,7 @@
       <panel-month
         v-show="panel === 'MONTH'"
         :value="value"
+        :calendar-year="calendarYear"
         @select="selectMonth" />
       <panel-time
         v-show="panel === 'TIME'"
