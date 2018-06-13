@@ -1,3 +1,5 @@
+import { t } from '@/locale/index'
+
 export default {
   name: 'panelMonth',
   props: {
@@ -9,7 +11,7 @@ export default {
     }
   },
   render (h) {
-    let months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+    let months = t('months')
     const currentMonth = this.value && new Date(this.value).getMonth()
     months = months.map((v, i) => {
       return <span

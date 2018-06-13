@@ -1,3 +1,4 @@
+import { t } from '@/locale/index'
 
 export default {
   name: 'panelDate',
@@ -27,7 +28,7 @@ export default {
       this.$emit('select', date)
     },
     getDays (firstDayOfWeek) {
-      const days = ['日', '一', '二', '三', '四', '五', '六']
+      const days = t('days')
       const firstday = parseInt(firstDayOfWeek, 10)
       return days.concat(days).slice(firstday, firstday + 7)
     },

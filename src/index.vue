@@ -2,7 +2,8 @@
   <div
     class="mx-datepicker"
     :class="{
-      'mx-datepicker-range': range
+      'mx-datepicker-range': range,
+      'disabled': disabled
     }"
     :style="{
       'width': computedWidth
@@ -10,11 +11,17 @@
     v-clickoutside="closePopup">
     <div class="mx-input-wrapper"
       @click="showPopup">
-      <input class="mx-input"
+      <input
+        :class="inputClass"
         ref="input"
         type="text"
+        :name="inputName"
+        :disabled="disabled"
+        :readonly="!editable"
         :value="text"
-        :placeholder="innerPlaceholder">
+        :placeholder="innerPlaceholder"
+        @input="handleInput"
+        @change="handleChange">
       <span class="mx-input-append">
         <slot name="mx-calendar-icon">
           <i class="mx-input-icon mx-calendar-icon"></i>
@@ -42,6 +49,14 @@
         @select-time="selectTime"></calendar-panel>
       <div class="mx-range-wrapper"
         v-else>
+        <div class="mx-shortcuts-wrapper"
+          v-if="innnerShortcuts.length">
+          <span
+            class="mx-shortcuts"
+            v-for="(range, index) in innnerShortcuts"
+            :key="index"
+            @click="selectRange(range)">{{range.text}}</span>
+        </div>
         <calendar-panel
           style="box-shadow:1px 0 rgba(0, 0, 0, .1)"
           v-bind="$attrs"
@@ -71,9 +86,11 @@
 </template>
 
 <script>
+import fecha from 'fecha'
 import CalendarPanel from './calendar.vue'
-import { formatDate, isValidDate, isValidRange, isDateObejct } from './utils/index'
+import { isValidDate, isValidRange, isDateObejct } from './utils/index'
 import clickoutside from './directives/clickoutside'
+import { use, t } from './locale/index'
 
 export default {
   name: 'DatePicker',
@@ -84,11 +101,16 @@ export default {
   props: {
     value: null,
     placeholder: {
-      type: 'String'
+      type: String,
+      default: null
+    },
+    lang: {
+      type: [String, Object],
+      default: 'zh'
     },
     format: {
       type: String,
-      default: 'yyyy-MM-dd'
+      default: 'YYYY-MM-DD'
     },
     range: {
       type: Boolean,
@@ -98,26 +120,47 @@ export default {
       type: String,
       default: '~'
     },
-    confirm: {
-      type: Boolean,
-      default: true
+    width: {
+      type: [String, Number],
+      default: null
     },
     confirmText: {
       type: String,
       default: 'OK'
     },
-    width: {
-      type: [String, Number],
-      default: null
+    confirm: {
+      type: Boolean,
+      default: false
+    },
+    editable: {
+      type: Boolean,
+      default: true
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     },
     clearable: {
       type: Boolean,
       default: true
+    },
+    shortcuts: {
+      type: [Boolean, Array],
+      default: true
+    },
+    inputName: {
+      type: String,
+      default: 'date'
+    },
+    inputClass: {
+      type: [String, Array],
+      default: 'mx-input'
     }
   },
   data () {
     return {
       currentValue: this.range ? [null, null] : null,
+      userInput: null,
       popupVisible: false,
       position: {}
     }
@@ -130,14 +173,22 @@ export default {
     popupVisible (val) {
       if (val) {
         this.initCalendar()
+      } else {
+        this.userInput = null
       }
     }
   },
   computed: {
     innerPlaceholder () {
-      return this.placeholder || '请输入'
+      if (typeof this.placeholder === 'string') {
+        return this.placeholder
+      }
+      return this.range ? t('placeholder.dateRange') : t('placeholder.date')
     },
     text () {
+      if (this.userInput !== null) {
+        return this.userInput
+      }
       if (!this.range) {
         return isValidDate(this.value) ? this.stringify(this.value) : ''
       }
@@ -152,8 +203,43 @@ export default {
       return this.width
     },
     showClearIcon () {
-      return this.clearable && (this.range ? isValidRange(this.value) : isValidDate(this.value))
+      return !this.disabled && this.clearable && (this.range ? isValidRange(this.value) : isValidDate(this.value))
+    },
+    innnerShortcuts () {
+      if (Array.isArray(this.shortcuts)) {
+        return this.shortcuts
+      }
+      if (this.shortcuts === false) {
+        return []
+      }
+      const pickers = t('pickers')
+      const arr = [
+        {
+          text: pickers[0],
+          start: new Date(),
+          end: new Date(Date.now() + 3600 * 1000 * 24 * 7)
+        },
+        {
+          text: pickers[1],
+          start: new Date(),
+          end: new Date(Date.now() + 3600 * 1000 * 24 * 30)
+        },
+        {
+          text: pickers[2],
+          start: new Date(Date.now() - 3600 * 1000 * 24 * 7),
+          end: new Date()
+        },
+        {
+          text: pickers[3],
+          start: new Date(Date.now() - 3600 * 1000 * 24 * 30),
+          end: new Date()
+        }
+      ]
+      return arr
     }
+  },
+  created () {
+    use(this.lang)
   },
   methods: {
     initCalendar () {
@@ -161,13 +247,22 @@ export default {
       this.displayPopup()
     },
     stringify (date) {
-      return formatDate(date, this.format)
+      return fecha.format(date, this.format)
     },
     dateEqual (a, b) {
       return isDateObejct(a) && isDateObejct(b) && a.getTime() === b.getTime()
     },
     rangeEqual (a, b) {
-      return Array.isArray(a) && Array.isArray(b) && a.every((item, index) => this.dateEqual(item, b[index]))
+      return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((item, index) => this.dateEqual(item, b[index]))
+    },
+    selectRange (range) {
+      this.currentValue = [ new Date(range.start), new Date(range.end) ]
+      this.updateDate(true)
+    },
+    clearDate () {
+      const date = this.range ? [null, null] : null
+      this.currentValue = date
+      this.updateDate(true)
     },
     confirmDate () {
       const valid = this.range ? isValidRange(this.currentValue) : isValidDate(this.currentValue)
@@ -178,15 +273,16 @@ export default {
       this.closePopup()
     },
     updateDate (confirm = false) {
-      if (this.confirm && !confirm) {
-        return
+      if ((this.confirm && !confirm) || this.disabled) {
+        return false
       }
       const equal = this.range ? this.rangeEqual(this.value, this.currentValue) : this.dateEqual(this.value, this.currentValue)
       if (equal) {
-        return
+        return false
       }
       this.$emit('input', this.currentValue)
       this.$emit('change', this.currentValue)
+      return true
     },
     handleValueChange (value) {
       if (!this.range) {
@@ -195,15 +291,9 @@ export default {
         this.currentValue = isValidRange(value) ? [new Date(value[0]), new Date(value[1])] : [null, null]
       }
     },
-    clearDate () {
-      const date = this.range ? [null, null] : null
-      this.currentValue = date
-      this.updateDate(true)
-    },
     selectDate (date) {
       this.currentValue = date
-      this.updateDate()
-      this.closePopup()
+      this.updateDate() && this.closePopup()
     },
     selectStartDate (date) {
       this.$set(this.currentValue, 0, date)
@@ -228,6 +318,9 @@ export default {
       this.selectEndDate(time)
     },
     showPopup () {
+      if (this.disabled) {
+        return
+      }
       this.popupVisible = true
     },
     closePopup () {
@@ -258,6 +351,45 @@ export default {
         this.position.top = '100%'
       } else {
         this.position.bottom = '100%'
+      }
+    },
+    parseDate (value, format) {
+      try {
+        return fecha.parse(value, format)
+      } catch (e) {
+        return false
+      }
+    },
+    handleInput (event) {
+      this.userInput = event.target.value
+    },
+    handleChange (event) {
+      const value = event.target.value
+      if (this.editable && this.userInput !== null) {
+        const calendar = this.$children[0]
+        const checkDate = calendar.type === 'date' ? calendar.isDisabledDate : calendar.isDisabledTime
+        if (this.range) {
+          const range = value.split(` ${this.rangeSeparator} `)
+          if (range.length === 2) {
+            const start = this.parseDate(range[0], this.format)
+            const end = this.parseDate(range[1], this.format)
+            if (start && end && !checkDate(start, null, end) && !checkDate(end, start, null)) {
+              this.currentValue = [ start, end ]
+              this.updateDate(true)
+              this.closePopup()
+              return
+            }
+          }
+        } else {
+          const date = this.parseDate(value, this.format)
+          if (date && !checkDate(date, null, null)) {
+            this.currentValue = date
+            this.updateDate(true)
+            this.closePopup()
+            return
+          }
+        }
+        this.$emit('input-error', value)
       }
     }
   }

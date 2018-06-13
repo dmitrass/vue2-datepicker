@@ -2,9 +2,9 @@
   <div id="app">
     <calendar-panel
       v-model="value1"
+      lang="en"
       range
-      :time-picker-options="{ start: '01:00', step: '00:30', end: '23:00' }"
-      format="yyyy-MM-dd"></calendar-panel>
+      format="YYYY-MM-DD"></calendar-panel>
   </div>
 </template>
 

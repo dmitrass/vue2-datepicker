@@ -2,7 +2,7 @@
   "name": "vue2-datepicker",
   "description": "A Datepicker Component For Vue2",
   "main": "dist/build.js",
-  "version": "1.9.7",
+  "version": "2.0.0",
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack-dev-server --hot --open",
     "demo": "cross-env NODE_ENV=production webpack --progress --hide-modules --config webpack.demo.config.js",
@@ -17,6 +17,9 @@
     "transform": {
       "^.+\\.js$": "<rootDir>/node_modules/babel-jest",
       ".*\\.(vue)$": "<rootDir>/node_modules/vue-jest"
+    },
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
     }
   },
   "repository": {
@@ -34,6 +37,7 @@
   },
   "homepage": "https://github.com/mengxiong10/vue2-datepicker#readme",
   "dependencies": {
+    "fecha": "^2.3.3",
     "vue": "^2.5.16"
   },
   "devDependencies": {

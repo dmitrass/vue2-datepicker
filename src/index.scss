@@ -5,6 +5,8 @@ $primary-color: #1284e7;
   position: relative;
   display: inline-block;
   width: 210px;
+  color: $default-color;
+  font: 14px/1.5 'Helvetica Neue', Helvetica, Arial, 'Microsoft Yahei', sans-serif;
   * {
     box-sizing: border-box;
   }
@@ -110,16 +112,16 @@ $primary-color: #1284e7;
   overflow: hidden;
 }
 
-.mx-datepicker-top {
+.mx-shortcuts-wrapper {
   text-align: left;
   padding: 0 12px;
   line-height: 34px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  & > span {
+  .mx-shortcuts {
     white-space: nowrap;
     cursor: pointer;
     &:hover {
-      color: #1284e7;
+      color: mix(#fff, $primary-color, 20%);
     }
     &:after {
       content: '|';

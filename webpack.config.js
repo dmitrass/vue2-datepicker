@@ -11,7 +11,10 @@ module.exports = {
     filename: 'build.js'
   },
   resolve: {
-    extensions: ['.js', '.vue', '.json']
+    extensions: ['.js', '.vue', '.json'],
+    alias: {
+      '@': path.join(__dirname, './src')
+    }
   },
   module: {
     rules: [

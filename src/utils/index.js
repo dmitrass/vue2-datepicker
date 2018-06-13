@@ -25,6 +25,10 @@ export function formatDate (value, fmt = 'yyyy-MM-dd HH:mm:ss') {
   return str
 }
 
+export function isPlainObject (obj) {
+  return Object.prototype.toString.call(obj) === '[object Object]'
+}
+
 export function isDateObejct (value) {
   return value instanceof Date
 }
@@ -41,7 +45,8 @@ export function isValidRange (date) {
     Array.isArray(date) &&
     date.length === 2 &&
     isValidDate(date[0]) &&
-    isValidDate(date[1])
+    isValidDate(date[1]) &&
+    (new Date(date[1]).getTime() >= new Date(date[0]).getTime())
   )
 }
 

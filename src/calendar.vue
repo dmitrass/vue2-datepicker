@@ -52,7 +52,8 @@
         @select="selectMonth" />
       <panel-time
         v-show="panel === 'TIME'"
-        :timePickerOptions="timePickerOptions"
+        :minute-step="minuteStep"
+        :time-picker-options="timePickerOptions"
         :value="value"
         :disabled-time="isDisabledTime"
         @select="selectTime" />
@@ -62,6 +63,7 @@
 
 <script>
 import { isValidDate, isDateObejct } from './utils/index'
+import { t } from './locale/index'
 import scrollIntoView from './utils/scroll-into-view'
 import PanelDate from './panel/date'
 import PanelYear from './panel/year'
@@ -113,6 +115,11 @@ export default {
         return []
       }
     },
+    minuteStep: {
+      type: Number,
+      default: 0,
+      validator: val => val >= 0 && val <= 60
+    },
     timePickerOptions: {
       type: [Object, Function],
       default () {
@@ -125,10 +132,11 @@ export default {
     const calendarYear = now.getFullYear()
     const calendarMonth = now.getMonth()
     const firstYear = Math.floor(calendarYear / 10) * 10
+    const months = t('months')
     return {
       panel: 'DATE',
       dates: [],
-      months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+      months,
       calendarMonth,
       calendarYear,
       firstYear
@@ -183,21 +191,24 @@ export default {
     updateNow (value) {
       this.now = value ? new Date(value) : new Date()
     },
-    isDisabledTime (date) {
+    isDisabledTime (date, startAt, endAt) {
       const time = new Date(date).getTime()
       const notBefore = this.notBefore && (time < new Date(this.notBefore))
       const notAfter = this.notAfter && (time > new Date(this.notAfter))
-      const startAt = this.startAt && (time < new Date(this.startAt))
-      const endAt = this.endAt && (time > new Date(this.endAt))
+      startAt = startAt === undefined ? this.startAt : startAt
+      startAt = startAt && (time < new Date(startAt))
+      endAt = endAt === undefined ? this.endAt : endAt
+      endAt = endAt && (time > new Date(endAt))
       return notBefore || notAfter || startAt || endAt
     },
-    isDisabledDate (date) {
+    isDisabledDate (date, startAt, endAt) {
       const time = new Date(date).getTime()
-
       const notBefore = this.notBefore && (time < new Date(this.notBefore).setHours(0, 0, 0, 0))
       const notAfter = this.notAfter && (time > new Date(this.notAfter).setHours(0, 0, 0, 0))
-      const startAt = this.startAt && (time < new Date(this.startAt).setHours(0, 0, 0, 0))
-      const endAt = this.endAt && (time > new Date(this.endAt).setHours(0, 0, 0, 0))
+      startAt = startAt === undefined ? this.startAt : startAt
+      startAt = startAt && (time < new Date(startAt).setHours(0, 0, 0, 0))
+      endAt = endAt === undefined ? this.endAt : endAt
+      endAt = endAt && (time > new Date(endAt).setHours(0, 0, 0, 0))
       let disabledDays = false
       if (Array.isArray(this.disabledDays)) {
         disabledDays = this.disabledDays.some(v => new Date(v).setHours(0, 0, 0, 0) === time)
